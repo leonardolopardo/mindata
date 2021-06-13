@@ -1,0 +1,8 @@
+[2021-06-09 22:06:36] [ INFO ] [SuperheroeController:160] INICIALIZANDO CONTROLLER: superheroeController/METODO: find_any
+[2021-06-09 22:06:36] [ INFO ] [SuperheroeController:162] EJECUTANDO VALIDATOR: superheroeValidator
+[2021-06-09 22:06:36] [ INFO ] [SuperheroeController:173] EJECUTANDO METODO: service.find.any
+[2021-06-09 22:06:36] [ INFO ] [SuperheroeController:186] RETORNANDO RESPONSEOK
+[2021-06-09 22:10:57] [ INFO ] [SuperheroeController:160] INICIALIZANDO CONTROLLER: superheroeController/METODO: find_any
+[2021-06-09 22:10:57] [ INFO ] [SuperheroeController:162] EJECUTANDO VALIDATOR: superheroeValidator
+[2021-06-09 22:10:57] [ INFO ] [SuperheroeController:173] EJECUTANDO METODO: service.find.any
+[2021-06-09 22:10:57] [ INFO ] [SuperheroeController:186] RETORNANDO RESPONSEOK
