@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mindata.annotation.TrackExecutionTime;
 import com.mindata.builder.SuperheroeBuilder;
 import com.mindata.constant.CodigoRespuestaConstant;
 import com.mindata.constant.ControllerConstant;
@@ -39,6 +40,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 	@Autowired
 	private SuperheroeBuilder shBuilder;
 	
+	@TrackExecutionTime
 	@Override
 	public ResponseDto modify(SuperheroeDto dto) {
 		// logger controller
@@ -77,6 +79,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 		}
 	}
 
+	@TrackExecutionTime
 	@Override
 	public ResponseDto deleteById(SuperheroeDto dto) {
 		// logger controller
@@ -112,6 +115,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 		}
 	}
 
+	@TrackExecutionTime
 	@Override
 	public ResponseDto findById(SuperheroeDto dto) {
 		// logger controller
@@ -154,6 +158,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 		}
 	}
 
+	@TrackExecutionTime
 	@Override
 	public ResponseDto findByName(SuperheroeDto dto) {
 		// logger controller
@@ -199,6 +204,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 		}
 	}
 
+	@TrackExecutionTime
 	@Override
 	public ResponseDto findAll() {
 		// logger controller
