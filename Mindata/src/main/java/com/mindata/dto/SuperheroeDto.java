@@ -1,25 +1,29 @@
 package com.mindata.dto;
 
-import java.io.Serializable;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
-public class SuperheroeDto implements Serializable {
+public class SuperheroeDto {
 
-	private static final long serialVersionUID = 6190637089973025227L;
+	private Long id;
 
-	private Integer id;
+	@NotEmpty(message = "Name no puede ser vacio")
+	@Size(max = 255, message = "Name no puede superar los 255 caracteres")
 	private String name;
-	
-	public SuperheroeDto () {}
-	public SuperheroeDto (Integer id, String name) {
+
+	public SuperheroeDto() {
+	}
+
+	public SuperheroeDto(Long id, String name) {
 		this.id = id;
 		this.name = name;
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

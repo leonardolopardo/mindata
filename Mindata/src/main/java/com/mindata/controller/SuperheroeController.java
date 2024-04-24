@@ -6,7 +6,9 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mindata.annotation.TrackExecutionTime;
@@ -14,7 +16,7 @@ import com.mindata.builder.SuperheroeBuilder;
 import com.mindata.constant.CodigoRespuestaConstant;
 import com.mindata.constant.ControllerConstant;
 import com.mindata.constant.EndPointConstant;
-import com.mindata.constant.FieldConstant;
+import com.mindata.constant.ErrorMessagesConstant;
 import com.mindata.constant.TipoMetodoConstant;
 import com.mindata.dto.SuperheroeDto;
 import com.mindata.log.LoggerTemplate;
@@ -24,183 +26,171 @@ import com.mindata.response.ResponseErrorDto;
 import com.mindata.response.ResponseOKDto;
 import com.mindata.response.ResponseOKListDto;
 import com.mindata.service.SuperheroeService;
-import com.mindata.validator.CommonsValidator;
-import com.mindata.validator.IValidator;
+
+import jakarta.validation.Valid;
 
 @RequestMapping("/superheroe")
 @RestController
 public class SuperheroeController implements IABMController<SuperheroeDto>, IListController<SuperheroeDto> {
-	
-	
+
 	static final Logger logger = Logger.getLogger(SuperheroeController.class);
-	
+
 	@Autowired
 	private SuperheroeService shService;
-	
+
 	@Autowired
 	private SuperheroeBuilder shBuilder;
-	
-	@TrackExecutionTime
-	@Override
-	public ResponseDto modify(SuperheroeDto dto) {
-		// logger controller
-		logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, ControllerConstant.SERVICE_SAVE));
 
-		// logger validator
-		logger.info(LoggerTemplate.validator(ControllerConstant.SUPERHEROE_VALIDATOR));
-		// validator
-		//validId
-		List<String> mensajes = IValidator.validator(dto.getId());
-		//validNombre
-		CommonsValidator.setMessageErrorsList(mensajes, CommonsValidator.empty(dto.getName(), FieldConstant.NOMBRE));
-		
-		if (!mensajes.isEmpty()) {
-			return new ResponseErrorDto(ControllerConstant.SERVICE_SAVE, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
-		}
-		
+	private ResponseDto save(Long id, SuperheroeDto dto, String tipoMetodoConstant) {
+		// Setteo el id para la actualizacion
+		dto.setId(id);
+		return this.save(dto, tipoMetodoConstant);
+	}
+
+	private ResponseDto save(SuperheroeDto dto, String tipoMetodoConstant) {
 		try {
+			// logger controller
+			logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER,
+					ControllerConstant.SERVICE_SAVE));
+
 			// logger service
 			logger.info(LoggerTemplate.method(ControllerConstant.SERVICE_SAVE));
 
-			// builder
-			Superheroe superheroe = shBuilder.builderToModel(dto);	
+			// builder to Model
+			Superheroe superheroe = shBuilder.builderToModel(dto);
+
 			// save
-			shService.save(superheroe);
+			Superheroe shGuardado = shService.save(superheroe);
+			
+			// builder to DTO
+			SuperheroeDto dtoGuardado =  shBuilder.builderToDto(shGuardado);
 			
 			// logger response
 			logger.info(LoggerTemplate.responseOK());
 			// return
-			return new ResponseOKDto<SuperheroeDto>(ControllerConstant.SERVICE_SAVE, TipoMetodoConstant.POST, CodigoRespuestaConstant.OK, dto);
+			return new ResponseOKDto<SuperheroeDto>(ControllerConstant.SERVICE_SAVE, tipoMetodoConstant,
+					CodigoRespuestaConstant.OK, dtoGuardado);
+
 		} catch (Exception e) {
 			String messageException = e.getMessage();
 			logger.error(messageException);
-			mensajes.add(messageException);
-			return new ResponseErrorDto(ControllerConstant.SERVICE_SAVE, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+			return new ResponseErrorDto(ControllerConstant.SERVICE_SAVE, tipoMetodoConstant,
+					CodigoRespuestaConstant.ERROR, messageException);
 		}
 	}
 
 	@TrackExecutionTime
 	@Override
-	public ResponseDto deleteById(SuperheroeDto dto) {
+	public ResponseDto add(@Valid SuperheroeDto dto) {
+		return this.save(dto, TipoMetodoConstant.POST);
+	}
+
+	@TrackExecutionTime
+	@Override
+	public ResponseDto modify(@PathVariable Long id, @Valid SuperheroeDto dto) {
+		return this.save(id, dto, TipoMetodoConstant.PUT);
+	}
+
+	@TrackExecutionTime
+	@Override
+	public ResponseDto deleteById(@PathVariable Long id) {
 		// logger controller
-		logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, ControllerConstant.SERVICE_DELETE));
-		
-		// logger validator
-		logger.info(LoggerTemplate.validator(ControllerConstant.SUPERHEROE_VALIDATOR));
-		
-		// validator
-		List<String> mensajes = IValidator.validator(dto.getId());
-		
-		if (!mensajes.isEmpty()) {
-			return new ResponseErrorDto(EndPointConstant.DELETE, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
-		}
-		
+		logger.info(
+				LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, ControllerConstant.SERVICE_DELETE));
+
 		try {
 			// logger service
 			logger.info(LoggerTemplate.method(ControllerConstant.SERVICE_DELETE));
 
-			//delete
-			shService.deleteById(dto.getId());
+			// delete
+			shService.deleteById(id);
 
 			// logger response
 			logger.info(LoggerTemplate.responseOK());
-			
+
 			// return
-			return new ResponseOKDto<SuperheroeDto>(EndPointConstant.DELETE, TipoMetodoConstant.POST, CodigoRespuestaConstant.OK, null);
+			return new ResponseOKDto<SuperheroeDto>(EndPointConstant.DELETE, TipoMetodoConstant.DELETE,
+					CodigoRespuestaConstant.OK, null);
 		} catch (Exception e) {
 			String messageException = e.getMessage();
 			logger.error(messageException);
-			mensajes.add(messageException);
-			return new ResponseErrorDto(EndPointConstant.DELETE, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+			return new ResponseErrorDto(EndPointConstant.DELETE, TipoMetodoConstant.DELETE,
+					CodigoRespuestaConstant.ERROR, messageException);
 		}
 	}
 
 	@TrackExecutionTime
 	@Override
-	public ResponseDto findById(SuperheroeDto dto) {
+	public ResponseDto findOne(@PathVariable Long id) {
 		// logger controller
 		logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, EndPointConstant.FIND_BY_ID));
-		// logger validator
-		logger.info(LoggerTemplate.validator(ControllerConstant.SUPERHEROE_VALIDATOR));
-		// validator
-		List<String> mensajes = IValidator.validator(dto.getId());
-		if (!mensajes.isEmpty()) {
-			return new ResponseErrorDto(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
-		}
-		
+
 		try {
 			// logger service
 			logger.info(LoggerTemplate.method(ControllerConstant.SERVICE_FIND_BY_ID));
 
 			// List
-			Optional<Superheroe> value = shService.findById(dto.getId());
-			
-			if(value.isPresent()) {
-				Superheroe utensilio = value.get();
-				
+			Optional<Superheroe> value = shService.findById(id);
+
+			if (value.isPresent()) {
+				Superheroe sh = value.get();
+
 				// Builder Model to Dto
-				SuperheroeDto utensilioDto = shBuilder.builderToDto(utensilio);
-				
+				SuperheroeDto shDto = shBuilder.builderToDto(sh);
+
 				// logger response
 				logger.info(LoggerTemplate.responseOK());
-				
+
 				// return
-				return new ResponseOKDto<SuperheroeDto>(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.POST, CodigoRespuestaConstant.OK, utensilioDto);
+				return new ResponseOKDto<SuperheroeDto>(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.GET,
+						CodigoRespuestaConstant.OK, shDto);
 			} else {
-				mensajes.add(CommonsValidator.elementNotFound());
-				return new ResponseErrorDto(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+				return new ResponseErrorDto(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.GET,
+						CodigoRespuestaConstant.ERROR, "");
 			}
 		} catch (Exception e) {
 			String messageException = e.getMessage();
 			logger.error(messageException);
-			mensajes.add(messageException);
-			return new ResponseErrorDto(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+			return new ResponseErrorDto(EndPointConstant.FIND_BY_ID, TipoMetodoConstant.GET,
+					CodigoRespuestaConstant.ERROR, messageException);
 		}
 	}
 
 	@TrackExecutionTime
 	@Override
-	public ResponseDto findByName(SuperheroeDto dto) {
+	public ResponseDto findByName(@RequestParam String name) {
 		// logger controller
 		logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, EndPointConstant.FIND_BY_NAME));
-		// logger validator
-		logger.info(LoggerTemplate.validator(ControllerConstant.SUPERHEROE_VALIDATOR));
-		// validator
-		List<String> mensajes = new ArrayList<>();
-		CommonsValidator.setMessageErrorsList(mensajes, CommonsValidator.empty(dto.getName(), FieldConstant.NOMBRE));
-		
-		if (!mensajes.isEmpty()) {
-			return new ResponseErrorDto(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
-		}
-		
+
 		try {
 			// logger service
 			logger.info(LoggerTemplate.method(ControllerConstant.SERVICE_FIND_BY_NAME));
 
 			// List
 			Superheroe sh = new Superheroe();
-			sh.setName(dto.getName());
-			
+			sh.setName(name);
+
 			List<Superheroe> shs = shService.findSuperheroeByNameLike(sh.getName());
-			
-			if(!shs.isEmpty()) {
+
+			if (!shs.isEmpty()) {
 				// Builder Model to Dto
 				List<SuperheroeDto> shsDto = shBuilder.builderListToDto(shs);
-				
+
 				// logger response
 				logger.info(LoggerTemplate.responseOK());
-				
+
 				// return
-				return new ResponseOKListDto<SuperheroeDto>(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.POST, CodigoRespuestaConstant.OK, shsDto);
+				return new ResponseOKListDto<SuperheroeDto>(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.GET,
+						CodigoRespuestaConstant.OK, shsDto);
 			} else {
-				mensajes.add(CommonsValidator.elementNotFound());
-				return new ResponseErrorDto(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+				return new ResponseErrorDto(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.GET,
+						CodigoRespuestaConstant.ERROR, ErrorMessagesConstant.ELEMENT_NOTFOUND_MESSAGE);
 			}
 		} catch (Exception e) {
 			String messageException = e.getMessage();
 			logger.error(messageException);
-			mensajes.add(messageException);
-			return new ResponseErrorDto(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+			return new ResponseErrorDto(EndPointConstant.FIND_BY_NAME, TipoMetodoConstant.GET,
+					CodigoRespuestaConstant.ERROR, messageException);
 		}
 	}
 
@@ -209,27 +199,27 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 	public ResponseDto findAll() {
 		// logger controller
 		logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, EndPointConstant.FIND_ALL));
-		
+
 		try {
 			// logger service
 			logger.info(LoggerTemplate.method(ControllerConstant.SERVICE_FIND_ALL));
 
 			// List
 			List<Superheroe> listSuperheroes = (ArrayList<Superheroe>) shService.findAll();
-			
-			//Build Model List to Dto List
-			List<SuperheroeDto> listUtensiliosDto = shBuilder.builderListToDto(listSuperheroes);
-			
+
+			// Build Model List to Dto List
+			List<SuperheroeDto> listShDto = shBuilder.builderListToDto(listSuperheroes);
+
 			// logger response
 			logger.info(LoggerTemplate.responseOK());
 			// return
-			return new ResponseOKListDto<SuperheroeDto>(EndPointConstant.FIND_ALL, TipoMetodoConstant.POST, CodigoRespuestaConstant.OK, listUtensiliosDto);
+			return new ResponseOKListDto<SuperheroeDto>(EndPointConstant.FIND_ALL, TipoMetodoConstant.GET,
+					CodigoRespuestaConstant.OK, listShDto);
 		} catch (Exception e) {
 			String messageException = e.getMessage();
 			logger.error(messageException);
-			List<String> mensajes = new ArrayList<>();
-			mensajes.add(messageException);
-			return new ResponseErrorDto(EndPointConstant.FIND_ALL, TipoMetodoConstant.POST, CodigoRespuestaConstant.ERROR, mensajes);
+			return new ResponseErrorDto(EndPointConstant.FIND_ALL, TipoMetodoConstant.GET,
+					CodigoRespuestaConstant.ERROR, messageException);
 		}
 	}
 

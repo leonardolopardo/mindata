@@ -16,6 +16,4 @@ public class ControllerConstant {
 	public static final String SERVICE_FIND_ALL = "service.find.all";
 	public static final String SUPERHEROE_VALIDATOR = "superheroeValidator";
 	public static final String SUPERHEROE_CONTROLLER = "superheroeController";
-	
-	
 }

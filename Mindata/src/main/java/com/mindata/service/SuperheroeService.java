@@ -12,7 +12,7 @@ import com.mindata.model.Superheroe;
 
 @Service
 @Repository
-public interface SuperheroeService extends CrudRepository<Superheroe, Integer> {
+public interface SuperheroeService extends CrudRepository<Superheroe, Long> {
 	@Query(value="select * from Superheroe sh where UPPER(sh.name) like UPPER(concat('%',:name,'%'))", nativeQuery=true)
 	List<Superheroe> findSuperheroeByNameLike(@Param("name") String name);
 }

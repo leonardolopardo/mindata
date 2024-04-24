@@ -1,8 +1,9 @@
 package com.mindata.controller;
 
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mindata.response.ResponseDto;
 
@@ -14,25 +15,28 @@ import com.mindata.response.ResponseDto;
  */
 public interface IListController<T> {
 	/**
-	 * FindOne <T>
-	 * @param dto
-	 * @return
-	 */
-	@PostMapping(value = "/findById")
-	ResponseDto findById (@RequestBody T dto);
-	
-	/**
 	 * FindAny  <T>
 	 * @param dto
 	 * @return
 	 */
-	@PostMapping(value = "/findByName")
-	ResponseDto findByName (@RequestBody T dto);
+	@GetMapping(value = "/findByName")
+	ResponseDto findByName (@RequestParam String name);
 
 	/**
-	 * FindAll <T>
+	 * FindOne <Dto>
+	 * @param dto
 	 * @return
 	 */
-	@PostMapping(value = "/findAll")
+	@GetMapping(value = "/{id}")
+	ResponseDto findOne (@PathVariable Long id);
+	
+	/**
+	 * FindAll <Dto>
+	 * @return
+	 */
+	@GetMapping(value = "")
 	ResponseDto findAll ();
+	
+	
+	
 }
