@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -93,6 +95,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 
 	@TrackExecutionTime
 	@Override
+	@CacheEvict(cacheNames = "product", allEntries = true)
 	public ResponseDto deleteById(@PathVariable Long id) {
 		// logger controller
 		logger.info(
@@ -196,6 +199,7 @@ public class SuperheroeController implements IABMController<SuperheroeDto>, ILis
 
 	@TrackExecutionTime
 	@Override
+	@Cacheable(value = "superheroe")
 	public ResponseDto findAll() {
 		// logger controller
 		logger.info(LoggerTemplate.inicialize(ControllerConstant.SUPERHEROE_CONTROLLER, EndPointConstant.FIND_ALL));
